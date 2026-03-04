@@ -1,11 +1,3 @@
-@app.route("/webhook", methods=["POST"])
-def handle_webhook():
-    # Handle both JSON and form data
-    payload = request.get_json(force=True, silent=True)
-    if not payload:
-        payload = request.form.to_dict() or {}
-    if not payload:
-        return jsonify({"error": "empty payload"}), 400
 from flask import Flask, request, jsonify
 from langsmith import Client
 import requests
@@ -54,7 +46,9 @@ def get_latest_trace_url(project_name: str) -> str:
 
 @app.route("/webhook", methods=["POST"])
 def handle_webhook():
-    payload = request.json
+    payload = request.get_json(force=True, silent=True)
+    if not payload:
+        payload = request.form.to_dict() or {}
     if not payload:
         return jsonify({"error": "empty payload"}), 400
 
@@ -79,67 +73,3 @@ def handle_webhook():
     )
 
     slack_payload = {
-        "blocks": [
-            {
-                "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": f"{emoji} LangSmith Alert — {alert_rule_name}",
-                    "emoji": True
-                }
-            },
-            {
-                "type": "divider"
-            },
-            {
-                "type": "section",
-                "fields": [
-                    {"type": "mrkdwn", "text": f"*Project:*\n{project_name}"},
-                    {"type": "mrkdwn", "text": f"*Alert Rule:*\n{alert_rule_name}"},
-                    {"type": "mrkdwn", "text": f"*Attribute:*\n{attribute_label}"},
-                    {"type": "mrkdwn", "text": f"*Alert Type:*\n{alert_type}"},
-                    {"type": "mrkdwn", "text": f"*Triggered Value:*\n{metric_value}"},
-                    {"type": "mrkdwn", "text": f"*Threshold:*\n{threshold}"},
-                    {"type": "mrkdwn", "text": f"*Timestamp:*\n{timestamp}"},
-                    {"type": "mrkdwn", "text": f"*Trace:*\n{trace_text}"}
-                ]
-            },
-            {
-                "type": "divider"
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "View Trace", "emoji": True},
-                        "url": trace_url or project_url
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "View Project", "emoji": True},
-                        "url": project_url
-                    }
-                ]
-            },
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"Alert Rule ID: `{alert_rule_id}` — use as dedup key"
-                    }
-                ]
-            }
-        ]
-    }
-
-    resp = requests.post(SLACK_WEBHOOK_URL, json=slack_payload)
-    if resp.status_code != 200:
-        return jsonify({"error": "slack delivery failed", "detail": resp.text}), 502
-
-    return jsonify({"ok": True}), 200
-
-
-if __name__ == "__main__":
-    app.run(port=5000, debug=True)
