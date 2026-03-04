@@ -1,3 +1,11 @@
+@app.route("/webhook", methods=["POST"])
+def handle_webhook():
+    # Handle both JSON and form data
+    payload = request.get_json(force=True, silent=True)
+    if not payload:
+        payload = request.form.to_dict() or {}
+    if not payload:
+        return jsonify({"error": "empty payload"}), 400
 from flask import Flask, request, jsonify
 from langsmith import Client
 import requests
