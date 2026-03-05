@@ -127,13 +127,15 @@ def handle_webhook():
             {
                 "type": "section",
                 "fields": [
-                    {"type": "mrkdwn", "text": "*Project:*\n" + project_name},
-                    {"type": "mrkdwn", "text": "*Run Name:*\n" + run_name},
-                    {"type": "mrkdwn", "text": "*Triggered Latency:*\n" + str(metric_value) + "s"},
-                    {"type": "mrkdwn", "text": "*Threshold:*\n" + str(threshold) + "s"},
-                    {"type": "mrkdwn", "text": "*Slowest Recent Run:*\n" + latency_line},
-                    {"type": "mrkdwn", "text": "*Timestamp:*\n" + str(timestamp)}
-                ]
+                        {"type": "mrkdwn", "text": "*Project:*\n" + project_name},
+                        {"type": "mrkdwn", "text": "*Project ID:*\n`" + LANGSMITH_PROJECT_ID + "`"},
+                        {"type": "mrkdwn", "text": "*Run Name:*\n" + run_name},
+                        {"type": "mrkdwn", "text": "*Triggered Latency:*\n" + str(metric_value) + "s"},
+                        {"type": "mrkdwn", "text": "*Threshold:*\n" + str(threshold) + "s"},
+                        {"type": "mrkdwn", "text": "*Slowest Recent Run:*\n" + latency_line},
+                        {"type": "mrkdwn", "text": "*Date:*\n" + str(timestamp).split("T")[0]},
+                        {"type": "mrkdwn", "text": "*Time (UTC):*\n" + str(timestamp).split("T")[1].replace("Z", "") if "T" in str(timestamp) else str(timestamp)}
+                        ],
             },
             {
                 "type": "section",
